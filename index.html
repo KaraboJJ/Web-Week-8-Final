@@ -1,0 +1,161 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>The Gadget Grid</title>
+  <link rel="stylesheet" href="style.css">
+</head>
+<body>
+  <header>
+    <h1>The Gadget Grid</h1>
+    <div id="user-info">Not logged in</div>
+  </header>
+  <nav>
+    <a href="#" onclick="showPage('home')">Home</a>
+    <a href="#" onclick="showPage('cart')">Cart</a>
+    <a href="#" onclick="showPage('login')">Login</a>
+    <a href="#" onclick="showPage('register')">Register</a>
+    <a href="#" onclick="showPage('admin')">Admin</a>
+  </nav>
+  <main>
+    <div id="home">
+      <input type="text" id="search" placeholder="Search products..." oninput="searchProducts()" />
+      <div id="products"></div>
+    </div>
+    <div id="cart" class="hidden">
+      <h2>Your Cart</h2>
+      <div id="cart-items"></div>
+      <button onclick="checkout()">Checkout</button>
+    </div>
+    <div id="login" class="hidden">
+      <h2>Login</h2>
+      <input type="text" id="login-user" placeholder="Username" /><br />
+      <input type="password" id="login-pass" placeholder="Password" /><br />
+      <button onclick="login()">Login</button>
+    </div>
+    <div id="register" class="hidden">
+      <h2>Register</h2>
+      <input type="text" id="reg-user" placeholder="Username" /><br />
+      <input type="password" id="reg-pass" placeholder="Password" /><br />
+      <button onclick="register()">Register</button>
+    </div>
+    <div id="admin" class="hidden">
+      <h2>Admin Panel</h2>
+      <div id="orders"></div>
+    </div>
+  </main>
+  <footer>
+    &copy; 2025 The Gadget Grid. All rights reserved.
+  </footer>
+  <script>
+    const products = [
+      { id: 1, name: "Laptop", price: 5999.00, image: "images/PD1.jpg" },
+      { id: 2, name: "Phone", price: 22000.00, image: "images/PD2.jpg" },
+      { id: 3, name: "Headphones", price: 1990.00, image: "images/PD3.jpg" },
+      { id: 4, name: "Monitor", price: 6000.00, image: "images/PD4.jpg" }, 
+      { id: 5, name: "Keyboard", price: 2000.00, image: "images/PD5.jpg" }, 
+      { id: 6, name: "Mouse", price: 950.00, image: "images/PD6.jpg" }, 
+      { id: 7, name: "Webcam", price: 2500.00, image: "images/PD7.jpg" }, 
+      { id: 8, name: "Microphone", price: 3500.00, image: "images/PD8.jpg" }, 
+      { id: 9, name: "Motherboard", price: 12000.00, image: "images/PD9.jpg" }, 
+      { id: 10, name: "Cooling fan", price: 1500.00, image: "images/PD10.jpg" }, 
+      { id: 11, name: "Tablet", price: 2985.00, image: "images/PD11.jpg" },
+    ];
+
+    const users = JSON.parse(localStorage.getItem("users")) || [];
+    let currentUser = JSON.parse(localStorage.getItem("currentUser"));
+    let cart = [];
+    let orders = JSON.parse(localStorage.getItem("orders")) || [];
+
+    function showPage(pageId) {
+      document.querySelectorAll("main > div").forEach(div => div.classList.add("hidden"));
+      document.getElementById(pageId).classList.remove("hidden");
+      if (pageId === 'admin') showOrders();
+    }
+
+    function renderProducts() {
+      const container = document.getElementById("products");
+      container.innerHTML = "";
+      products.forEach(p => {
+        const div = document.createElement("div");
+        div.className = "product";
+        div.innerHTML = `
+          <img src="${p.image}" alt="${p.name}" style="width:150px;height:150px;object-fit:cover;margin-bottom:10px;"><br>
+          <h3>${p.name}</h3>
+          <p>$${p.price}</p>
+          <button onclick="addToCart(${p.id})">Add to Cart</button>
+        `;
+        container.appendChild(div);
+      });
+    }
+
+    function searchProducts() {
+      const term = document.getElementById("search").value.toLowerCase();
+      document.querySelectorAll(".product").forEach(div => {
+        div.style.display = div.querySelector("h3").innerText.toLowerCase().includes(term) ? "block" : "none";
+      });
+    }
+
+    function addToCart(id) {
+      const product = products.find(p => p.id === id);
+      cart.push(product);
+      alert("Added to cart");
+    }
+
+    function checkout() {
+      if (!currentUser) return alert("Login to checkout");
+      orders.push({ user: currentUser.username, items: [...cart] });
+      localStorage.setItem("orders", JSON.stringify(orders));
+      cart = [];
+      alert("Order placed");
+    }
+
+    function login() {
+      const username = document.getElementById("login-user").value;
+      const password = document.getElementById("login-pass").value;
+      const user = users.find(u => u.username === username && u.password === password);
+      if (user) {
+        currentUser = user;
+        localStorage.setItem("currentUser", JSON.stringify(currentUser));
+        updateUserInfo();
+        alert("Login successful");
+      } else {
+        alert("Invalid credentials");
+      }
+    }
+
+    function register() {
+      const username = document.getElementById("reg-user").value;
+      const password = document.getElementById("reg-pass").value;
+      if (users.find(u => u.username === username)) {
+        return alert("User already exists");
+      }
+      const user = { username, password };
+      users.push(user);
+      localStorage.setItem("users", JSON.stringify(users));
+      alert("Registered successfully");
+    }
+
+    function updateUserInfo() {
+      document.getElementById("user-info").innerText = currentUser ? `Logged in as ${currentUser.username}` : "Not logged in";
+    }
+
+    function showOrders() {
+      const container = document.getElementById("orders");
+      container.innerHTML = "<h3>All Orders:</h3>";
+      orders.forEach((order, index) => {
+        const div = document.createElement("div");
+        div.innerHTML = `<strong>Order #${index + 1}</strong> by ${order.user}<ul>` +
+                        order.items.map(item => `<li>${item.name} - $${item.price}</li>`).join('') + '</ul>';
+        container.appendChild(div);
+      });
+    }
+
+    window.onload = () => {
+      renderProducts();
+      updateUserInfo();
+    };
+  </script>
+</body>
+</html>
