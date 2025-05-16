@@ -32,9 +32,10 @@ ecommerce-website/
 # 🧪 How to Use
 
 1. Download or clone this repository.
-2. Launch a web browser and navigate to index.html.
-3. Engage with the application:
-4. Create a user account:
+2. netlify url: https://merry-gelato-fa3cbe.netlify.app/
+3. Launch a web browser and navigate to index.html.
+4. Engage with the application:
+5. Create a user account:
 Sign in.
 Put items in your cart and check out.
 Use the Admin Panel to view order history.
